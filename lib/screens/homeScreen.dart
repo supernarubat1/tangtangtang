@@ -1,6 +1,7 @@
-import 'dart:ui';
+// ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:tangtangtang/utility/constants.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -14,56 +15,61 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(14),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                "Tae",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
+              SizedBox(height: 10),
+              myHeader(),
+              SizedBox(height: 20),
+              Container(
                 width: double.infinity,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    elevation: MaterialStateProperty.all(0),
-                    backgroundColor: MaterialStateProperty.all(const Color(0xffFDCD23)),
-                    padding: MaterialStateProperty.all(const EdgeInsets.symmetric(vertical: 16, horizontal: 40)),
-                  ),
-                  child: const Text(
-                    "Login",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  onPressed: () {},
+                color: Colors.blue,
+                child: Center(
+                  child: Text("Today"),
                 ),
               ),
-              TextButton(
-                style: ButtonStyle(
-                  overlayColor: MaterialStateProperty.all(Colors.transparent),
-                  padding: MaterialStateProperty.all(const EdgeInsets.symmetric(vertical: 16, horizontal: 40)),
+              SizedBox(height: 30),
+              Container(
+                width: double.infinity,
+                color: Colors.green,
+                child: Center(
+                  child: Text("data"),
                 ),
-                child: const Text(
-                  "Register",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-                onPressed: () {},
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget myHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      decoration: BoxDecoration(
+          // color: Colors.red,
+          ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: const [
+          Text(
+            "TangTangTang",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            "Tae",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
