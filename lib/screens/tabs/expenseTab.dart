@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_const_constructors, file_names, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:tangtangtang/providers/categoryProvider.dart';
 
 class ExpenseTab extends StatefulWidget {
   const ExpenseTab({Key? key}) : super(key: key);
@@ -19,13 +21,13 @@ class _ExpenseTabState extends State<ExpenseTab> {
     {"id": 6, "title": "อาหารสัตว์"},
     {"id": 7, "title": "ค่ารักษาสัตว์"},
   ];
-  int selectCat = 0;
 
   @override
   Widget build(BuildContext context) {
+    CategoryProvider catePro = Provider.of<CategoryProvider>(context);
+
     return Container(
       decoration: BoxDecoration(
-        // color: Colors.red,
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -80,7 +82,7 @@ class _ExpenseTabState extends State<ExpenseTab> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      border: selectCat == expList[i]["id"] ? Border.all(color: Colors.black, width: 2) : Border.all(color: Colors.transparent),
+                      border: catePro.types == "exp" && catePro.selectCat == expList[i]["id"] ? Border.all(color: Colors.black, width: 2) : Border.all(color: Colors.transparent),
                       borderRadius: BorderRadius.circular(6),
                       boxShadow: [
                         BoxShadow(
@@ -96,16 +98,15 @@ class _ExpenseTabState extends State<ExpenseTab> {
                         Positioned(
                           top: 6,
                           right: 6,
-                          child: selectCat == expList[i]["id"] ? Icon(Icons.check_circle_rounded) : Text(""),
+                          child: catePro.types == "exp" && catePro.selectCat == expList[i]["id"] ? Icon(Icons.check_circle_rounded) : Text(""),
                         ),
                         Center(child: Text(expList[i]["title"])),
                       ],
                     ),
                   ),
                   onTap: () {
-                    setState(() => selectCat = expList[i]["id"]);
-
-                    Navigator.pop(context);
+                    catePro.setCat(cateId: expList[i]["id"], type: "exp");
+                    Future.delayed(Duration(milliseconds: 400), () => Navigator.pop(context));
                   },
                 );
               },

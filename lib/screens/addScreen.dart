@@ -1,11 +1,14 @@
 // ignore_for_file: prefer_const_constructors, file_names, prefer_const_literals_to_create_immutables
+// '${daySelect.year.toString().split(' ')[0]}-${daySelect.month.toString().split(' ')[0]}-${daySelect.day.toString().split(' ')[0]}',
 
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:tab_indicator_styler/tab_indicator_styler.dart';
-import 'package:tangtangtang/screens/tabbars/expenseTab.dart';
-import 'package:tangtangtang/screens/tabbars/incomeTab.dart';
+import 'package:tangtangtang/providers/categoryProvider.dart';
+import 'package:tangtangtang/screens/tabs/expenseTab.dart';
+import 'package:tangtangtang/screens/tabs/incomeTab.dart';
 
 class AddScreen extends StatefulWidget {
   const AddScreen({Key? key}) : super(key: key);
@@ -17,10 +20,27 @@ class AddScreen extends StatefulWidget {
 
 class _AddScreenState extends State<AddScreen> {
   DateTime daySelect = DateTime.now();
-  int currentTab = 0;
+  List expList = [
+    {"id": 1, "title": "อาหาร"},
+    {"id": 2, "title": "เดินทาง"},
+    {"id": 3, "title": "ที่พัก"},
+    {"id": 4, "title": "ของใช้"},
+    {"id": 5, "title": "ค่ารักษา"},
+    {"id": 6, "title": "อาหารสัตว์"},
+    {"id": 7, "title": "ค่ารักษาสัตว์"},
+  ];
+  List incList = [
+    {"id": 1, "title": "เงินเดือน"},
+    {"id": 2, "title": "ขายของ"},
+    {"id": 3, "title": "กู้ยืม"},
+    {"id": 4, "title": "ของขวัญ"},
+    {"id": 5, "title": "ขโมย"},
+  ];
 
   @override
   Widget build(BuildContext context) {
+    CategoryProvider catePro = Provider.of<CategoryProvider>(context);
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -31,7 +51,8 @@ class _AddScreenState extends State<AddScreen> {
               SizedBox(height: 10),
               myDateTime(),
               SizedBox(height: 14),
-              myCategory(),
+              myCategory(catePro),
+              SizedBox(height: 14),
             ],
           ),
         ),
@@ -39,7 +60,7 @@ class _AddScreenState extends State<AddScreen> {
     );
   }
 
-  Widget myCategory() {
+  Widget myCategory(CategoryProvider catePro) {
     return Center(
       child: Container(
         width: double.infinity,
@@ -77,14 +98,36 @@ class _AddScreenState extends State<AddScreen> {
                         ),
                       ),
                       SizedBox(height: 2),
-                      Text(
-                        // '${daySelect.year.toString().split(' ')[0]}-${daySelect.month.toString().split(' ')[0]}-${daySelect.day.toString().split(' ')[0]}',
-                        DateFormat.yMMMMEEEEd('th').add_Hm().format(daySelect),
-                        style: TextStyle(color: Colors.grey),
-                      ),
+                      catePro.selectCat == 0
+                          ? Text(
+                              "กรุณาเลือกหมวดหมู่",
+                              style: TextStyle(color: Colors.grey),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  catePro.types == "exp" ? expList[catePro.selectCat - 1]['title'] : incList[catePro.selectCat - 1]['title'],
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
                     ],
                   ),
                 ),
+                catePro.types != "null"
+                    ? Container(
+                        padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8, top: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          catePro.types == "exp" ? "รายจ่าย" : "รายรับ",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      )
+                    : Text(""),
               ],
             ),
           ),
@@ -105,7 +148,7 @@ class _AddScreenState extends State<AddScreen> {
                       borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
                     ),
                     child: DefaultTabController(
-                      initialIndex: currentTab,
+                      initialIndex: catePro.currentTab,
                       length: 2,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
