@@ -1,10 +1,10 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, file_names
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:tangtangtang/screens/addScreen.dart';
 import 'package:tangtangtang/utility/constants.dart';
-import 'package:hawk_fab_menu/hawk_fab_menu.dart';
 import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List data = [
     {'name': 'A', 'color': Colors.red},
     {'name': 'B', 'color': Colors.green},
-    {'name': 'C', 'color': Colors.blue},
+    {'name': 'C', 'color': Colors.green},
     {'name': 'D', 'color': Colors.green},
     {'name': 'E', 'color': Colors.red},
   ];
@@ -39,9 +39,9 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.all(14),
           child: Column(
             children: [
-              SizedBox(height: 10),
-              myHeader(),
               // SizedBox(height: 10),
+              myHeader(),
+              SizedBox(height: 10),
               myDate(),
               SizedBox(height: 20),
               myData(),
@@ -50,6 +50,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       bottomNavigationBar: myBottomBar(),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Constants.COLOR_MAIN,
+        child: Icon(Icons.add, size: 26),
+        onPressed: () => Navigator.pushNamed(context, AddScreen.id),
+      ),
     );
   }
 
@@ -59,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
       fabLocation: BubbleBottomBarFabLocation.end,
       opacity: .2,
       elevation: 0,
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      // borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       backgroundColor: Colors.transparent,
       tilesPadding: EdgeInsets.symmetric(vertical: 8),
       items: const [
@@ -107,95 +112,41 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget myData() {
     return Expanded(
-      child: Stack(
-        children: [
-          Container(
-            // padding: const EdgeInsets.all(14),
-            // decoration: BoxDecoration(
-            //   color: Colors.white,
-            //   borderRadius: BorderRadius.circular(6),
-            //   boxShadow: [
-            //     BoxShadow(
-            //       color: Colors.grey.withOpacity(0.1),
-            //       spreadRadius: 5,
-            //       blurRadius: 7,
-            //       offset: Offset(0, 3),
-            //     ),
-            //   ],
-            // ),
-            child: ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: data.length,
-              itemBuilder: (BuildContext context, int i) {
-                return Container(
-                  padding: const EdgeInsets.all(14),
-                  margin: const EdgeInsets.only(bottom: 14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: data[i]['color']),
-                    borderRadius: BorderRadius.circular(6),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.05),
-                        spreadRadius: 5,
-                        blurRadius: 7,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Text(data[i]['name']),
-                );
-              },
-            ),
-          ),
-          Positioned(
-            child: HawkFabMenu(
-              blur: 0,
-              fabColor: Constants.COLOR_MAIN,
-              backgroundColor: Colors.transparent,
-              body: Text(''),
-              items: [
-                HawkFabMenuItem(
-                  label: 'เพิ่มร่ายจ่าย',
-                  icon: const Icon(Icons.monetization_on),
-                  color: Colors.black,
-                  labelColor: Colors.red,
-                  labelBackgroundColor: Colors.transparent,
-                  ontap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => DraggableScrollableSheet(
-                        initialChildSize: 0.9,
-                        maxChildSize: 0.9,
-                        minChildSize: 0.5,
-                        builder: (_, controller) => Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(20),
-                            ),
-                          ),
-                          child: Text("A"),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                HawkFabMenuItem(
-                  label: 'เพิ่มร่ายรับ',
-                  icon: const Icon(Icons.account_balance_wallet),
-                  color: Colors.black,
-                  labelColor: Colors.green,
-                  labelBackgroundColor: Colors.transparent,
-                  ontap: () {},
+      child: ListView.builder(
+        physics: const BouncingScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: data.length,
+        itemBuilder: (BuildContext context, int i) {
+          return Container(
+            padding: const EdgeInsets.only(bottom: 14),
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.09),
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: Offset(0, 3),
                 ),
               ],
             ),
-          ),
-        ],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    left: BorderSide(
+                      color: data[i]['color'],
+                      width: 6,
+                    ),
+                  ),
+                ),
+                child: Text(data[i]['name']),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -209,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(6),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withOpacity(0.09),
               spreadRadius: 5,
               blurRadius: 7,
               offset: Offset(0, 3),
@@ -219,7 +170,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: TextButton(
           style: ButtonStyle(splashFactory: NoSplash.splashFactory),
           child: Row(children: [
-            SizedBox(width: 10),
             Icon(Icons.date_range, color: Colors.black),
             SizedBox(width: 6),
             Text(
@@ -242,9 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               currentTime: daySelect,
               locale: LocaleType.th,
-              onConfirm: (date) {
-                setState(() => daySelect = date);
-              },
+              onConfirm: (date) => setState(() => daySelect = date),
             );
           },
         ),
@@ -264,7 +212,6 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Row(
             children: const [
-              SizedBox(width: 16),
               Icon(Icons.account_circle),
               SizedBox(width: 6),
               Text(
@@ -276,10 +223,27 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          IconButton(
-            splashRadius: 20,
-            icon: Icon(Icons.more_vert),
-            onPressed: () {},
+          InkWell(
+            highlightColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.09),
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Icon(Icons.more_vert, size: 28),
+            ),
+            onTap: () {},
           ),
         ],
       ),
