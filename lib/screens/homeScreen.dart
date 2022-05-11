@@ -19,11 +19,11 @@ class _HomeScreenState extends State<HomeScreen> {
   int currentScreen = 0;
   DateTime daySelect = DateTime.now();
   List data = [
-    {'name': 'A', 'color': Colors.red},
-    {'name': 'B', 'color': Colors.green},
-    {'name': 'C', 'color': Colors.green},
-    {'name': 'D', 'color': Colors.green},
-    {'name': 'E', 'color': Colors.red},
+    {'name': 'A', 'color': Colors.grey},
+    {'name': 'B', 'color': Colors.grey},
+    {'name': 'C', 'color': Colors.black},
+    {'name': 'D', 'color': Colors.grey},
+    {'name': 'E', 'color': Colors.black},
   ];
 
   @override
@@ -51,7 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       bottomNavigationBar: myBottomBar(),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Constants.COLOR_MAIN,
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.black,
         child: Icon(Icons.add, size: 26),
         onPressed: () => Navigator.pushNamed(context, AddScreen.id),
       ),
@@ -69,40 +70,40 @@ class _HomeScreenState extends State<HomeScreen> {
       tilesPadding: EdgeInsets.symmetric(vertical: 8),
       items: const [
         BubbleBottomBarItem(
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.black,
           icon: Icon(
-            Icons.dashboard,
+            Icons.home,
             color: Colors.black,
           ),
           activeIcon: Icon(
-            Icons.dashboard,
-            color: Colors.red,
+            Icons.home,
+            color: Colors.black,
           ),
           title: Text("Home"),
         ),
         BubbleBottomBarItem(
-          badgeColor: Colors.red,
-          backgroundColor: Colors.red,
+          badgeColor: Colors.black,
+          backgroundColor: Colors.black,
           icon: Icon(
-            Icons.dashboard,
+            Icons.message,
             color: Colors.black,
           ),
           activeIcon: Icon(
-            Icons.dashboard,
-            color: Colors.red,
+            Icons.message,
+            color: Colors.black,
           ),
           title: Text("Home"),
         ),
         BubbleBottomBarItem(
-          badgeColor: Colors.red,
-          backgroundColor: Colors.red,
+          badgeColor: Colors.black,
+          backgroundColor: Colors.black,
           icon: Icon(
-            Icons.dashboard,
+            Icons.settings,
             color: Colors.black,
           ),
           activeIcon: Icon(
-            Icons.dashboard,
-            color: Colors.red,
+            Icons.settings,
+            color: Colors.black,
           ),
           title: Text("Home"),
         ),

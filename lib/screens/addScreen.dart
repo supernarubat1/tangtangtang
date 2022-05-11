@@ -2,8 +2,10 @@
 // '${daySelect.year.toString().split(' ')[0]}-${daySelect.month.toString().split(' ')[0]}-${daySelect.day.toString().split(' ')[0]}',
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:pattern_formatter/pattern_formatter.dart';
 import 'package:provider/provider.dart';
 import 'package:tab_indicator_styler/tab_indicator_styler.dart';
 import 'package:tangtangtang/providers/categoryProvider.dart';
@@ -19,6 +21,7 @@ class AddScreen extends StatefulWidget {
 }
 
 class _AddScreenState extends State<AddScreen> {
+  final ImagePicker _picker = ImagePicker();
   DateTime daySelect = DateTime.now();
   List expList = [
     {"id": 1, "title": "อาหาร"},
@@ -48,11 +51,207 @@ class _AddScreenState extends State<AddScreen> {
           child: Column(
             children: [
               myHeader(),
-              SizedBox(height: 10),
-              myDateTime(),
-              SizedBox(height: 14),
-              myCategory(catePro),
-              SizedBox(height: 14),
+              Expanded(
+                child: ListView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  children: [
+                    myDateTime(),
+                    SizedBox(height: 14),
+                    myCategory(catePro),
+                    SizedBox(height: 14),
+                    myMoney(),
+                    SizedBox(height: 14),
+                    myDetail(),
+                    SizedBox(height: 14),
+                    myImage(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget myImage() {
+    return Center(
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.09),
+              spreadRadius: 5,
+              blurRadius: 7,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.image, color: Colors.black, size: 40),
+              SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "รูปภาพ",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    ElevatedButton(
+                      child: Text("อัพโหลดรูป"),
+                      onPressed: () async {
+                        _picker.pickImage(source: ImageSource.camera);
+                        // final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+                        // final pickFile = await ImagePicker().pickImage(
+                        //   source: ImageSource.gallery,
+                        //   maxWidth: 500,
+                        //   maxHeight: 500,
+                        // );
+
+                        // print(pickFile);
+                        // if (pickFile != null) {
+                        //   // setState(() => image = File(pickFile.path));
+                        //   // print(pickFile.name);
+                        // }
+                      },
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget myDetail() {
+    return Center(
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.09),
+              spreadRadius: 5,
+              blurRadius: 7,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.assignment_rounded, color: Colors.black, size: 40),
+              SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "รายละเอียด",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Container(
+                      color: Colors.white,
+                      child: TextField(
+                        cursorColor: Colors.black,
+                        style: TextStyle(color: Colors.grey),
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          isDense: true,
+                          hintText: "...",
+                          hintStyle: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget myMoney() {
+    return Center(
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.09),
+              spreadRadius: 5,
+              blurRadius: 7,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.monetization_on, color: Colors.black, size: 40),
+              SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "จำนวนเงิน",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    // SizedBox(height: 2),
+                    Container(
+                      color: Colors.white,
+                      child: TextField(
+                        cursorColor: Colors.black,
+                        style: TextStyle(color: Colors.grey),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [ThousandsFormatter()],
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          isDense: true,
+                          hintText: "0",
+                          hintStyle: TextStyle(color: Colors.grey),
+                          suffixText: "บาท",
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

@@ -58,7 +58,10 @@ class _IncomeTabState extends State<IncomeTab> {
                 height: 46,
                 child: ElevatedButton(
                   child: Icon(Icons.add),
-                  style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
+                  style: ButtonStyle(
+                    foregroundColor: MaterialStateProperty.all(Colors.white),
+                    backgroundColor: MaterialStateProperty.all(Colors.black),
+                  ),
                   onPressed: () {},
                 ),
               ),

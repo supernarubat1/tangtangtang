@@ -27,7 +27,7 @@ class _InitialScreenState extends State<InitialScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Constants.COLOR_MAIN,
+                  color: Colors.black,
                 ),
               ),
               const SizedBox(height: 40),
@@ -36,8 +36,8 @@ class _InitialScreenState extends State<InitialScreen> {
                 child: ElevatedButton(
                   style: ButtonStyle(
                     elevation: MaterialStateProperty.all(0),
-                    backgroundColor: MaterialStateProperty.all(Constants.COLOR_MAIN),
-                    padding: MaterialStateProperty.all(const EdgeInsets.symmetric(vertical: 14, horizontal: 40)),
+                    backgroundColor: MaterialStateProperty.all(Colors.black),
+                    foregroundColor: MaterialStateProperty.all(Colors.white),
                   ),
                   child: const Text(
                     "Login",
