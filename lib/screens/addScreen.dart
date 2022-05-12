@@ -1,5 +1,7 @@
-// ignore_for_file: prefer_const_constructors, file_names, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, file_names, prefer_const_literals_to_create_immutables, avoid_print
 // '${daySelect.year.toString().split(' ')[0]}-${daySelect.month.toString().split(' ')[0]}-${daySelect.day.toString().split(' ')[0]}',
+
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -21,7 +23,8 @@ class AddScreen extends StatefulWidget {
 }
 
 class _AddScreenState extends State<AddScreen> {
-  final ImagePicker _picker = ImagePicker();
+  File? image;
+  String imageSize = "";
   DateTime daySelect = DateTime.now();
   List expList = [
     {"id": 1, "title": "อาหาร"},
@@ -39,6 +42,25 @@ class _AddScreenState extends State<AddScreen> {
     {"id": 4, "title": "ของขวัญ"},
     {"id": 5, "title": "ขโมย"},
   ];
+
+  Future getImage(ImageSource ims) async {
+    final picker = await ImagePicker().pickImage(source: ims, imageQuality: 50, maxWidth: 1000, maxHeight: 1000);
+    if (picker == null) return;
+
+    setState(() => image = File(picker.path));
+
+    final bytes = File(picker.path).readAsBytesSync().lengthInBytes;
+    final kb = bytes / 1024;
+    final mb = kb / 1024;
+
+    if (kb.toInt() > 1024) {
+      imageSize = '${mb.toStringAsFixed(2)} MB';
+      print('${mb.toStringAsFixed(2)} MB');
+    } else {
+      imageSize = '${kb.toStringAsFixed(2)} KB';
+      print('${kb.toStringAsFixed(2)} KB');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,43 +115,84 @@ class _AddScreenState extends State<AddScreen> {
         ),
         child: Padding(
           padding: const EdgeInsets.all(6),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Column(
             children: [
-              Icon(Icons.image, color: Colors.black, size: 40),
-              SizedBox(width: 6),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "รูปภาพ",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+              Row(
+                children: [
+                  Icon(Icons.image, color: Colors.black, size: 40),
+                  SizedBox(width: 6),
+                  Text(
+                    "รูปภาพ",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        imageSize,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
-                    ElevatedButton(
-                      child: Text("อัพโหลดรูป"),
-                      onPressed: () async {
-                        _picker.pickImage(source: ImageSource.camera);
-                        // final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-                        // final pickFile = await ImagePicker().pickImage(
-                        //   source: ImageSource.gallery,
-                        //   maxWidth: 500,
-                        //   maxHeight: 500,
-                        // );
-
-                        // print(pickFile);
-                        // if (pickFile != null) {
-                        //   // setState(() => image = File(pickFile.path));
-                        //   // print(pickFile.name);
-                        // }
-                      },
-                    )
-                  ],
+                  ),
+                ],
+              ),
+              Container(
+                width: double.infinity,
+                height: 250,
+                margin: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(6),
                 ),
+                child: image == null
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
+                            child: Text("ถ่ายรูป", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            onPressed: () => getImage(ImageSource.camera),
+                          ),
+                          SizedBox(height: 16),
+                          ElevatedButton(
+                            style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
+                            child: Text("เลือกรูป", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            onPressed: () => getImage(ImageSource.gallery),
+                          ),
+                        ],
+                      )
+                    : Container(
+                        width: double.infinity,
+                        height: 250,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          image: DecorationImage(
+                            image: FileImage(image!),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Align(
+                          alignment: Alignment.topRight,
+                          child: FloatingActionButton(
+                            elevation: 0,
+                            mini: true,
+                            backgroundColor: Color.fromARGB(100, 0, 0, 0),
+                            child: Icon(Icons.close, color: Colors.white, size: 20),
+                            onPressed: () => setState(() {
+                              image = null;
+                              imageSize = "";
+                            }),
+                          ),
+                        ),
+                      ),
               ),
             ],
           ),
