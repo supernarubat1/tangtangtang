@@ -2,13 +2,14 @@
 // '${daySelect.year.toString().split(' ')[0]}-${daySelect.month.toString().split(' ')[0]}-${daySelect.day.toString().split(' ')[0]}',
 
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:pattern_formatter/pattern_formatter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:tab_indicator_styler/tab_indicator_styler.dart';
 import 'package:tangtangtang/providers/categoryProvider.dart';
 import 'package:tangtangtang/screens/tabs/expenseTab.dart';
@@ -44,21 +45,48 @@ class _AddScreenState extends State<AddScreen> {
   ];
 
   Future getImage(ImageSource ims) async {
-    final picker = await ImagePicker().pickImage(source: ims, imageQuality: 50, maxWidth: 1000, maxHeight: 1000);
-    if (picker == null) return;
+    bool perCam = await Permission.camera.request().isGranted;
+    bool perSto = await Permission.storage.request().isGranted;
 
-    setState(() => image = File(picker.path));
+    if (perCam && perSto) {
+      final picker = await ImagePicker().pickImage(source: ims, imageQuality: 50, maxWidth: 1000, maxHeight: 1000);
+      if (picker == null) return;
 
-    final bytes = File(picker.path).readAsBytesSync().lengthInBytes;
-    final kb = bytes / 1024;
-    final mb = kb / 1024;
+      setState(() => image = File(picker.path));
 
-    if (kb.toInt() > 1024) {
-      imageSize = '${mb.toStringAsFixed(2)} MB';
-      print('${mb.toStringAsFixed(2)} MB');
+      final bytes = File(picker.path).readAsBytesSync().lengthInBytes;
+      final kb = bytes / 1024;
+      final mb = kb / 1024;
+
+      if (kb.toInt() > 1024) {
+        imageSize = '${mb.toStringAsFixed(2)} MB';
+        print('${mb.toStringAsFixed(2)} MB');
+      } else {
+        imageSize = '${kb.toStringAsFixed(2)} KB';
+        print('${kb.toStringAsFixed(2)} KB');
+      }
     } else {
-      imageSize = '${kb.toStringAsFixed(2)} KB';
-      print('${kb.toStringAsFixed(2)} KB');
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AlertDialog(
+          title: Text("แจ้งเตือน"),
+          content: Text("กรุณาเปิดสิทธิ์การใช้งาน"),
+          actions: [
+            TextButton(
+              child: Text(
+                "ตกลง",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -87,6 +115,28 @@ class _AddScreenState extends State<AddScreen> {
                     myDetail(),
                     SizedBox(height: 14),
                     myImage(),
+                    SizedBox(height: 14),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: SfDateRangePicker(
+                        selectionMode: DateRangePickerSelectionMode.single,
+                        showNavigationArrow: true,
+                        onSelectionChanged: (d) {
+                          print(d.value);
+                        },
+                      ),
+                    ),
+                    SizedBox(height: 14),
+                    catePro.types != "null"
+                        ? ElevatedButton(
+                            style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
+                            child: Text("เพิ่ม ${catePro.types == 'exp' ? 'รายจ่าย' : 'รายรับ'}", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            onPressed: () {},
+                          )
+                        : Text(""),
                   ],
                 ),
               ),
@@ -528,6 +578,7 @@ class _AddScreenState extends State<AddScreen> {
               ),
               currentTime: daySelect,
               locale: LocaleType.th,
+              // 2022-05-19 20:20:00.000
               onConfirm: (date) => setState(() => daySelect = date),
             );
           },
