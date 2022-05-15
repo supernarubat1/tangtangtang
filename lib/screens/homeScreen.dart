@@ -1,10 +1,13 @@
-// ignore_for_file: prefer_const_constructors, file_names
+// ignore_for_file: prefer_const_constructors, file_names, avoid_print
 
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:tangtangtang/db/tangDb.dart';
+import 'package:tangtangtang/models/addModel.dart';
 import 'package:tangtangtang/screens/addScreen.dart';
-import 'package:tangtangtang/utility/constants.dart';
 import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -26,9 +29,31 @@ class _HomeScreenState extends State<HomeScreen> {
     {'name': 'E', 'color': Colors.black},
   ];
 
+  Uint8List? myImage;
+
+  List<AddModel> listAdd = [];
+
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
+
+    getData();
+  }
+
+  getData() async {
+    final data = await TangDb.instance.getAll();
+
+    for (var element in data) {
+      AddModel d = AddModel.fromJson(element);
+      // print(data.id);
+      listAdd.add(d);
+    }
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
@@ -39,6 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.all(14),
           child: Column(
             children: [
+              myImage != null ? Image.memory(myImage!) : Text("data"),
               // SizedBox(height: 10),
               myHeader(),
               SizedBox(height: 10),
@@ -116,8 +142,15 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ListView.builder(
         physics: const BouncingScrollPhysics(),
         shrinkWrap: true,
-        itemCount: data.length,
+        itemCount: isLoading ? 0 : listAdd.length,
         itemBuilder: (BuildContext context, int i) {
+          dynamic decodeImage;
+          if (listAdd[i].image.toString() != "") {
+            decodeImage = base64Decode(listAdd[i].image.toString());
+          } else {
+            decodeImage = 'assets/images/no-image.jpg';
+          }
+
           return Container(
             padding: const EdgeInsets.only(bottom: 14),
             decoration: BoxDecoration(
@@ -130,21 +163,84 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(
-                    left: BorderSide(
-                      color: data[i]['color'],
-                      width: 6,
+            child: InkWell(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      left: BorderSide(
+                        color: listAdd[i].catMode == "exp" ? Colors.black : Colors.grey,
+                        width: 6,
+                      ),
+                    ),
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      radius: 30,
+                      child: listAdd[i].image.toString() != ""
+                          ? CircleAvatar(
+                              radius: 27,
+                              backgroundImage: MemoryImage(decodeImage),
+                            )
+                          : CircleAvatar(
+                              radius: 27,
+                              backgroundImage: AssetImage(decodeImage),
+                            ),
+                    ),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(listAdd[i].catName.toString()),
+                        SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            border: Border.all(width: 2, color: Colors.black),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            "${listAdd[i].money.toString()} บาท",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                      ],
+                    ),
+                    subtitle: Text(listAdd[i].detail.toString()),
+                    trailing: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8, top: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            listAdd[i].catMode == "exp" ? "รายจ่าย" : "รายรับ",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Text(listAdd[i].time.toString()),
+                      ],
                     ),
                   ),
                 ),
-                child: Text(data[i]['name']),
               ),
+              onTap: () => getData(),
+              // onTap: () async {
+              //   AddModel getData = await TangDb.instance.getById(1);
+              //   final decodeBytes = base64Decode(getData.image.toString());
+              //   setState(() {
+              //     myImage = decodeBytes;
+              //   });
+              // },
             ),
           );
         },

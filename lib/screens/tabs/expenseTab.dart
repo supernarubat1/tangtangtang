@@ -85,7 +85,7 @@ class _ExpenseTabState extends State<ExpenseTab> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      border: catePro.types == "exp" && catePro.selectCat == expList[i]["id"] ? Border.all(color: Colors.black, width: 2) : Border.all(color: Colors.transparent),
+                      border: catePro.modeCat == "exp" && catePro.selectCat == expList[i]["id"] ? Border.all(color: Colors.black, width: 2) : Border.all(color: Colors.transparent),
                       borderRadius: BorderRadius.circular(6),
                       boxShadow: [
                         BoxShadow(
@@ -101,14 +101,14 @@ class _ExpenseTabState extends State<ExpenseTab> {
                         Positioned(
                           top: 6,
                           right: 6,
-                          child: catePro.types == "exp" && catePro.selectCat == expList[i]["id"] ? Icon(Icons.check_circle_rounded) : Text(""),
+                          child: catePro.modeCat == "exp" && catePro.selectCat == expList[i]["id"] ? Icon(Icons.check_circle_rounded) : Text(""),
                         ),
                         Center(child: Text(expList[i]["title"])),
                       ],
                     ),
                   ),
                   onTap: () {
-                    catePro.setCat(cateId: expList[i]["id"], type: "exp");
+                    catePro.setCat(id: expList[i]["id"], mode: "exp");
                     Future.delayed(Duration(milliseconds: 400), () => Navigator.pop(context));
                   },
                 );

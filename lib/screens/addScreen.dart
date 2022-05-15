@@ -1,16 +1,20 @@
 // ignore_for_file: prefer_const_constructors, file_names, prefer_const_literals_to_create_immutables, avoid_print
 // '${daySelect.year.toString().split(' ')[0]}-${daySelect.month.toString().split(' ')[0]}-${daySelect.day.toString().split(' ')[0]}',
 
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pattern_formatter/pattern_formatter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:tab_indicator_styler/tab_indicator_styler.dart';
+import 'package:tangtangtang/db/tangDb.dart';
+import 'package:tangtangtang/models/addModel.dart';
 import 'package:tangtangtang/providers/categoryProvider.dart';
 import 'package:tangtangtang/screens/tabs/expenseTab.dart';
 import 'package:tangtangtang/screens/tabs/incomeTab.dart';
@@ -24,9 +28,18 @@ class AddScreen extends StatefulWidget {
 }
 
 class _AddScreenState extends State<AddScreen> {
+  TangDb tangDb = TangDb.instance;
+  DateTime daySelect = DateTime.now();
+  String date = "";
+  String time = "";
+  String catMode = "";
+  String catId = "";
+  String catName = "";
+  String money = "0";
+  String detail = "";
+  String img64string = "";
   File? image;
   String imageSize = "";
-  DateTime daySelect = DateTime.now();
   List expList = [
     {"id": 1, "title": "อาหาร"},
     {"id": 2, "title": "เดินทาง"},
@@ -60,10 +73,8 @@ class _AddScreenState extends State<AddScreen> {
 
       if (kb.toInt() > 1024) {
         imageSize = '${mb.toStringAsFixed(2)} MB';
-        print('${mb.toStringAsFixed(2)} MB');
       } else {
         imageSize = '${kb.toStringAsFixed(2)} KB';
-        print('${kb.toStringAsFixed(2)} KB');
       }
     } else {
       showDialog(
@@ -90,57 +101,115 @@ class _AddScreenState extends State<AddScreen> {
     }
   }
 
+  myAdd(CategoryProvider catePro) async {
+    date = DateFormat('yyyy-MM-dd').format(daySelect);
+    time = DateFormat('HH:mm').format(daySelect);
+
+    if (catePro.modeCat == "exp") {
+      catMode = "exp";
+      catId = expList[catePro.selectCat - 1]['id'].toString();
+      catName = expList[catePro.selectCat - 1]['title'];
+    }
+
+    if (catePro.modeCat == "inc") {
+      catMode = "inc";
+      catId = incList[catePro.selectCat - 1]['id'].toString();
+      catName = incList[catePro.selectCat - 1]['title'];
+    }
+
+    if (image != null) {
+      final bytes = await image!.readAsBytes();
+      img64string = base64Encode(bytes);
+    }
+
+    AddModel data = AddModel(
+      date: date,
+      time: time,
+      catMode: catMode,
+      catId: catId,
+      catName: catName,
+      money: money,
+      detail: detail,
+      image: img64string,
+    );
+
+    final newAdd = await TangDb.instance.create(data);
+
+    print(newAdd);
+
+    // print(DateFormat('yyyy-MM-dd').format(daySelect));
+    // print(DateFormat('HH:mm').format(daySelect));
+
+    // print("exp");
+    // print("catId : ${expList[catePro.selectCat - 1]['id']}");
+    // print("catName : ${expList[catePro.selectCat - 1]['title']}");
+    // print("inc");
+    // print("catId : ${incList[catePro.selectCat - 1]['id']}");
+    // print("catName : ${incList[catePro.selectCat - 1]['title']}");
+
+    // print(money);
+    // print(detail);
+    // print(img64string.substring(0, 100));
+
+    // AddModel.fromJson({
+    //   "date": date,
+    //   "time": time,
+    //   "catMode": catMode,
+    //   "catId": catId,
+    //   "catName": catName,
+    //   "money": money,
+    //   "detail": detail,
+    //   "image": img64string,
+    // });
+  }
+
+  back(CategoryProvider catePro) async {
+    Navigator.pop(context);
+    Future.delayed(Duration(milliseconds: 100), () {
+      catePro.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     CategoryProvider catePro = Provider.of<CategoryProvider>(context);
 
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            children: [
-              myHeader(),
-              Expanded(
-                child: ListView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  children: [
-                    myDateTime(),
-                    SizedBox(height: 14),
-                    myCategory(catePro),
-                    SizedBox(height: 14),
-                    myMoney(),
-                    SizedBox(height: 14),
-                    myDetail(),
-                    SizedBox(height: 14),
-                    myImage(),
-                    SizedBox(height: 14),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: SfDateRangePicker(
-                        selectionMode: DateRangePickerSelectionMode.single,
-                        showNavigationArrow: true,
-                        onSelectionChanged: (d) {
-                          print(d.value);
-                        },
-                      ),
-                    ),
-                    SizedBox(height: 14),
-                    catePro.types != "null"
-                        ? ElevatedButton(
-                            style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
-                            child: Text("เพิ่ม ${catePro.types == 'exp' ? 'รายจ่าย' : 'รายรับ'}", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                            onPressed: () {},
-                          )
-                        : Text(""),
-                  ],
+    return WillPopScope(
+      onWillPop: () => back(catePro),
+      child: Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              children: [
+                myHeader(catePro),
+                Expanded(
+                  child: ListView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    children: [
+                      myDateTime(),
+                      SizedBox(height: 14),
+                      myCategory(catePro),
+                      SizedBox(height: 14),
+                      myMoney(),
+                      SizedBox(height: 14),
+                      myDetail(),
+                      SizedBox(height: 14),
+                      myImage(),
+                      SizedBox(height: 14),
+                      catePro.modeCat != "null"
+                          ? ElevatedButton(
+                              style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
+                              child: Text("เพิ่ม ${catePro.modeCat == 'exp' ? 'รายจ่าย' : 'รายรับ'}", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              onPressed: () => myAdd(catePro),
+                            )
+                          : Text(""),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -298,6 +367,7 @@ class _AddScreenState extends State<AddScreen> {
                           hintText: "...",
                           hintStyle: TextStyle(color: Colors.grey),
                         ),
+                        onChanged: (d) => setState(() => detail = d),
                       ),
                     ),
                   ],
@@ -360,6 +430,7 @@ class _AddScreenState extends State<AddScreen> {
                           hintStyle: TextStyle(color: Colors.grey),
                           suffixText: "บาท",
                         ),
+                        onChanged: (m) => setState(() => money = m),
                       ),
                     ),
                   ],
@@ -419,7 +490,7 @@ class _AddScreenState extends State<AddScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  catePro.types == "exp" ? expList[catePro.selectCat - 1]['title'] : incList[catePro.selectCat - 1]['title'],
+                                  catePro.modeCat == "exp" ? expList[catePro.selectCat - 1]['title'] : incList[catePro.selectCat - 1]['title'],
                                   style: TextStyle(color: Colors.grey),
                                 ),
                               ],
@@ -427,7 +498,7 @@ class _AddScreenState extends State<AddScreen> {
                     ],
                   ),
                 ),
-                catePro.types != "null"
+                catePro.modeCat != "null"
                     ? Container(
                         padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8, top: 4),
                         decoration: BoxDecoration(
@@ -435,7 +506,7 @@ class _AddScreenState extends State<AddScreen> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          catePro.types == "exp" ? "รายจ่าย" : "รายรับ",
+                          catePro.modeCat == "exp" ? "รายจ่าย" : "รายรับ",
                           style: TextStyle(color: Colors.white),
                         ),
                       )
@@ -587,13 +658,10 @@ class _AddScreenState extends State<AddScreen> {
     );
   }
 
-  Widget myHeader() {
+  Widget myHeader(CategoryProvider catePro) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-          // color: Colors.red,
-          ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -617,7 +685,12 @@ class _AddScreenState extends State<AddScreen> {
               ),
               child: Icon(Icons.keyboard_arrow_left, size: 28),
             ),
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              Navigator.pop(context);
+              Future.delayed(Duration(milliseconds: 100), () {
+                catePro.clear();
+              });
+            },
           ),
           Text(
             "เพิ่มรายการ",
@@ -632,3 +705,25 @@ class _AddScreenState extends State<AddScreen> {
     );
   }
 }
+
+// Container(
+//                       decoration: BoxDecoration(
+//                         color: Colors.white,
+//                         borderRadius: BorderRadius.circular(6),
+//                         boxShadow: [
+//                           BoxShadow(
+//                             color: Colors.grey.withOpacity(0.09),
+//                             spreadRadius: 5,
+//                             blurRadius: 7,
+//                             offset: Offset(0, 3),
+//                           ),
+//                         ],
+//                       ),
+//                       child: SfDateRangePicker(
+//                         selectionMode: DateRangePickerSelectionMode.single,
+//                         showNavigationArrow: true,
+//                         onSelectionChanged: (d) {
+//                           print(d.value);
+//                         },
+//                       ),
+//                     ),

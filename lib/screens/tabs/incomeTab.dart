@@ -83,7 +83,7 @@ class _IncomeTabState extends State<IncomeTab> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      border: catePro.types == "inc" && catePro.selectCat == incList[i]["id"] ? Border.all(color: Colors.black, width: 2) : Border.all(color: Colors.transparent),
+                      border: catePro.modeCat == "inc" && catePro.selectCat == incList[i]["id"] ? Border.all(color: Colors.black, width: 2) : Border.all(color: Colors.transparent),
                       borderRadius: BorderRadius.circular(6),
                       boxShadow: [
                         BoxShadow(
@@ -99,14 +99,14 @@ class _IncomeTabState extends State<IncomeTab> {
                         Positioned(
                           top: 6,
                           right: 6,
-                          child: catePro.types == "inc" && catePro.selectCat == incList[i]["id"] ? Icon(Icons.check_circle_rounded) : Text(""),
+                          child: catePro.modeCat == "inc" && catePro.selectCat == incList[i]["id"] ? Icon(Icons.check_circle_rounded) : Text(""),
                         ),
                         Center(child: Text(incList[i]["title"])),
                       ],
                     ),
                   ),
                   onTap: () {
-                    catePro.setCat(cateId: incList[i]["id"], type: "inc");
+                    catePro.setCat(id: incList[i]["id"], mode: "inc");
                     Future.delayed(Duration(milliseconds: 400), () => Navigator.pop(context));
                   },
                 );
