@@ -21,18 +21,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int currentScreen = 0;
   DateTime daySelect = DateTime.now();
-  List data = [
-    {'name': 'A', 'color': Colors.grey},
-    {'name': 'B', 'color': Colors.grey},
-    {'name': 'C', 'color': Colors.black},
-    {'name': 'D', 'color': Colors.grey},
-    {'name': 'E', 'color': Colors.black},
-  ];
-
   Uint8List? myImage;
-
   List<AddModel> listAdd = [];
-
   bool isLoading = true;
 
   @override
@@ -44,16 +34,135 @@ class _HomeScreenState extends State<HomeScreen> {
 
   getData() async {
     final data = await TangDb.instance.getAll();
-
     for (var element in data) {
-      AddModel d = AddModel.fromJson(element);
-      // print(data.id);
+      final d = AddModel.fromJson(element);
       listAdd.add(d);
     }
+    setState(() => isLoading = false);
+  }
 
+  getByDate(DateTime date) async {
+    setState(() => isLoading = true);
+    listAdd.clear();
+    String myDate = DateFormat('yyyy-MM-dd').format(date);
+    final data = await TangDb.instance.getByDate(myDate);
+    if (data != null) {
+      for (var element in data) {
+        final d = AddModel.fromJson(element);
+        listAdd.add(d);
+      }
+    }
     setState(() {
+      daySelect = date;
       isLoading = false;
     });
+  }
+
+  showData(AddModel _listAdd) {
+    dynamic decodeImage;
+    if (_listAdd.image.toString() != "") {
+      decodeImage = base64Decode(_listAdd.image.toString());
+    } else {
+      decodeImage = 'assets/images/no-image.jpg';
+    }
+
+    showModalBottomSheet(
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      context: context,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        maxChildSize: 0.9,
+        minChildSize: 0.5,
+        builder: (_, controller) {
+          return Container(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+            ),
+            child: ListView(
+              physics: const BouncingScrollPhysics(),
+              // crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 0,
+                  padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8, top: 4),
+                  decoration: BoxDecoration(
+                    color: _listAdd.catMode == "exp" ? Colors.black : Colors.grey,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    _listAdd.catMode == "exp" ? "รายจ่าย" : "รายรับ",
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(height: 10),
+                _listAdd.image.toString() != ""
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.memory(
+                          decodeImage,
+                          width: double.infinity,
+                          height: 300,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.asset(
+                          decodeImage,
+                          width: double.infinity,
+                          height: 300,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    // physics: const BouncingScrollPhysics(),
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _listAdd.catName.toString(),
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Text(
+                            "${_listAdd.money.toString()} บาท",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 14),
+                      Text(
+                        _listAdd.detail.toString(),
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          "${_listAdd.time.toString()} น",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -61,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.only(bottom: 0, left: 14, right: 14, top: 14),
           child: Column(
             children: [
               myImage != null ? Image.memory(myImage!) : Text("data"),
@@ -70,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: 10),
               myDate(),
               SizedBox(height: 20),
-              myData(),
+              isLoading ? CircularProgressIndicator() : myData(),
             ],
           ),
         ),
@@ -89,11 +198,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return BubbleBottomBar(
       currentIndex: currentScreen,
       fabLocation: BubbleBottomBarFabLocation.end,
-      opacity: .2,
+      opacity: 0.2,
       elevation: 0,
       // borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       backgroundColor: Colors.transparent,
-      tilesPadding: EdgeInsets.symmetric(vertical: 8),
+      tilesPadding: EdgeInsets.symmetric(vertical: 10),
       items: const [
         BubbleBottomBarItem(
           backgroundColor: Colors.black,
@@ -142,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ListView.builder(
         physics: const BouncingScrollPhysics(),
         shrinkWrap: true,
-        itemCount: isLoading ? 0 : listAdd.length,
+        itemCount: listAdd.length,
         itemBuilder: (BuildContext context, int i) {
           dynamic decodeImage;
           if (listAdd[i].image.toString() != "") {
@@ -177,70 +286,77 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      radius: 30,
-                      child: listAdd[i].image.toString() != ""
-                          ? CircleAvatar(
-                              radius: 27,
-                              backgroundImage: MemoryImage(decodeImage),
-                            )
-                          : CircleAvatar(
-                              radius: 27,
-                              backgroundImage: AssetImage(decodeImage),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          listAdd[i].image.toString() != ""
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Image.memory(
+                                    decodeImage,
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Image.asset(
+                                    decodeImage,
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      listAdd[i].catName.toString(),
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8, top: 4),
+                                      decoration: BoxDecoration(
+                                        color: listAdd[i].catMode == "exp" ? Colors.black : Colors.grey,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        listAdd[i].catMode == "exp" ? "รายจ่าย" : "รายรับ",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  "${listAdd[i].money.toString()} บาท",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
                             ),
-                    ),
-                    title: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(listAdd[i].catName.toString()),
-                        SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            border: Border.all(width: 2, color: Colors.black),
-                            borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Text(
-                            "${listAdd[i].money.toString()} บาท",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                      ],
-                    ),
-                    subtitle: Text(listAdd[i].detail.toString()),
-                    trailing: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8, top: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            listAdd[i].catMode == "exp" ? "รายจ่าย" : "รายรับ",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Text(listAdd[i].time.toString()),
-                      ],
-                    ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      Text(listAdd[i].detail.toString()),
+                      SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text('${listAdd[i].time.toString()} น'),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              onTap: () => getData(),
-              // onTap: () async {
-              //   AddModel getData = await TangDb.instance.getById(1);
-              //   final decodeBytes = base64Decode(getData.image.toString());
-              //   setState(() {
-              //     myImage = decodeBytes;
-              //   });
-              // },
+              onTap: () => showData(listAdd[i]),
             ),
           );
         },
@@ -289,7 +405,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               currentTime: daySelect,
               locale: LocaleType.th,
-              onConfirm: (date) => setState(() => daySelect = date),
+              onConfirm: (date) => getByDate(date),
             );
           },
         ),

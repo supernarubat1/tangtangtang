@@ -61,22 +61,21 @@ class TangDb {
   Future getAll() async {
     final db = await instance.database;
     final data = await db.query(tbAdd);
-
     return data;
   }
 
-  Future<AddModel> getById(int id) async {
+  Future getByDate(String date) async {
     final db = await instance.database;
     final data = await db.query(
       tbAdd,
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'date = ?',
+      whereArgs: [date],
     );
 
     if (data.isNotEmpty) {
-      return AddModel.fromJson(data.first);
+      return data;
     } else {
-      throw Exception('ID $id not found');
+      return null;
     }
   }
 }
