@@ -9,6 +9,7 @@ import 'package:tangtangtang/db/tangDb.dart';
 import 'package:tangtangtang/models/addModel.dart';
 import 'package:tangtangtang/screens/addScreen.dart';
 import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
+import 'package:tangtangtang/screens/editScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -29,7 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    getData();
+    // getData();
+    getByDate(daySelect);
   }
 
   getData() async {
@@ -58,112 +60,14 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  showData(AddModel _listAdd) {
-    dynamic decodeImage;
-    if (_listAdd.image.toString() != "") {
-      decodeImage = base64Decode(_listAdd.image.toString());
-    } else {
-      decodeImage = 'assets/images/no-image.jpg';
-    }
-
-    showModalBottomSheet(
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      context: context,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        maxChildSize: 0.9,
-        minChildSize: 0.5,
-        builder: (_, controller) {
-          return Container(
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
-            ),
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              // crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 0,
-                  padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8, top: 4),
-                  decoration: BoxDecoration(
-                    color: _listAdd.catMode == "exp" ? Colors.black : Colors.grey,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    _listAdd.catMode == "exp" ? "รายจ่าย" : "รายรับ",
-                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(height: 10),
-                _listAdd.image.toString() != ""
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: Image.memory(
-                          decodeImage,
-                          width: double.infinity,
-                          height: 300,
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: Image.asset(
-                          decodeImage,
-                          width: double.infinity,
-                          height: 300,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    // physics: const BouncingScrollPhysics(),
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _listAdd.catName.toString(),
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          Text(
-                            "${_listAdd.money.toString()} บาท",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 14),
-                      Text(
-                        _listAdd.detail.toString(),
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      SizedBox(height: 10),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          "${_listAdd.time.toString()} น",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
+  // showData(AddModel _listAdd) {
+  //   dynamic decodeImage;
+  //   if (_listAdd.image.toString() != "") {
+  //     decodeImage = base64Decode(_listAdd.image.toString());
+  //   } else {
+  //     decodeImage = 'assets/images/no-image.jpg';
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -173,8 +77,6 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.only(bottom: 0, left: 14, right: 14, top: 14),
           child: Column(
             children: [
-              myImage != null ? Image.memory(myImage!) : Text("data"),
-              // SizedBox(height: 10),
               myHeader(),
               SizedBox(height: 10),
               myDate(),
@@ -356,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              onTap: () => showData(listAdd[i]),
+              onTap: () => Navigator.pushNamed(context, EditScreen.id, arguments: listAdd[i]),
             ),
           );
         },

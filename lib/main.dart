@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:tangtangtang/providers/categoryProvider.dart';
 import 'package:tangtangtang/screens/addScreen.dart';
+import 'package:tangtangtang/screens/editScreen.dart';
 import 'package:tangtangtang/screens/homeScreen.dart';
 import 'package:tangtangtang/screens/initialScreen.dart';
 
@@ -16,6 +17,7 @@ class MyApp extends StatelessWidget {
     InitialScreen.id: (_) => const InitialScreen(),
     HomeScreen.id: (_) => const HomeScreen(),
     AddScreen.id: (_) => const AddScreen(),
+    EditScreen.id: (_) => const EditScreen(),
   };
 
   @override

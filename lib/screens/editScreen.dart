@@ -19,17 +19,22 @@ import 'package:tangtangtang/providers/categoryProvider.dart';
 import 'package:tangtangtang/screens/tabs/expenseTab.dart';
 import 'package:tangtangtang/screens/tabs/incomeTab.dart';
 
-class AddScreen extends StatefulWidget {
-  const AddScreen({Key? key}) : super(key: key);
-  static const String id = "AddScreen";
+class EditScreen extends StatefulWidget {
+  const EditScreen({Key? key}) : super(key: key);
+  static const String id = "EditScreen";
 
   @override
-  State<AddScreen> createState() => _AddScreenState();
+  State<EditScreen> createState() => _EditScreenState();
 }
 
-class _AddScreenState extends State<AddScreen> {
+class _EditScreenState extends State<EditScreen> {
+  bool isLoading = true;
+  late AddModel myData;
+  late CategoryProvider catePro;
   TangDb tangDb = TangDb.instance;
   DateTime daySelect = DateTime.now();
+  var moneyCon = TextEditingController();
+  var detailCon = TextEditingController();
   String date = "";
   String time = "";
   String catMode = "";
@@ -56,6 +61,34 @@ class _AddScreenState extends State<AddScreen> {
     {"id": 4, "title": "ของขวัญ"},
     {"id": 5, "title": "ขโมย"},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.delayed(Duration.zero, () => getData());
+  }
+
+  getData() async {
+    DateTime myDateTime = DateTime.parse("${myData.date} ${myData.time}");
+    catePro.modeCat = myData.catMode.toString();
+    catePro.selectCat = int.parse(myData.catId.toString());
+    catePro.currentTab = myData.catMode == "exp" ? 0 : 1;
+    moneyCon.text = myData.money.toString();
+    detailCon.text = myData.detail.toString();
+
+    dynamic decodeImage;
+    if (myData.image.toString() != "") {
+      decodeImage = base64Decode(myData.image.toString());
+    } else {
+      decodeImage = 'assets/images/no-image.jpg';
+    }
+
+    setState(() {
+      daySelect = myDateTime;
+      isLoading = false;
+    });
+  }
 
   Future getImage(ImageSource ims) async {
     bool perCam = await Permission.camera.request().isGranted;
@@ -136,31 +169,6 @@ class _AddScreenState extends State<AddScreen> {
     final newAdd = await TangDb.instance.create(data);
 
     print(newAdd);
-
-    // print(DateFormat('yyyy-MM-dd').format(daySelect));
-    // print(DateFormat('HH:mm').format(daySelect));
-
-    // print("exp");
-    // print("catId : ${expList[catePro.selectCat - 1]['id']}");
-    // print("catName : ${expList[catePro.selectCat - 1]['title']}");
-    // print("inc");
-    // print("catId : ${incList[catePro.selectCat - 1]['id']}");
-    // print("catName : ${incList[catePro.selectCat - 1]['title']}");
-
-    // print(money);
-    // print(detail);
-    // print(img64string.substring(0, 100));
-
-    // AddModel.fromJson({
-    //   "date": date,
-    //   "time": time,
-    //   "catMode": catMode,
-    //   "catId": catId,
-    //   "catName": catName,
-    //   "money": money,
-    //   "detail": detail,
-    //   "image": img64string,
-    // });
   }
 
   back(CategoryProvider catePro) async {
@@ -172,7 +180,8 @@ class _AddScreenState extends State<AddScreen> {
 
   @override
   Widget build(BuildContext context) {
-    CategoryProvider catePro = Provider.of<CategoryProvider>(context);
+    catePro = Provider.of<CategoryProvider>(context);
+    myData = ModalRoute.of(context)!.settings.arguments as AddModel;
 
     return WillPopScope(
       onWillPop: () => back(catePro),
@@ -180,36 +189,38 @@ class _AddScreenState extends State<AddScreen> {
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(14),
-            child: Column(
-              children: [
-                myHeader(catePro),
-                Expanded(
-                  child: ListView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : Column(
                     children: [
-                      myDateTime(),
-                      SizedBox(height: 14),
-                      myCategory(catePro),
-                      SizedBox(height: 14),
-                      myMoney(),
-                      SizedBox(height: 14),
-                      myDetail(),
-                      SizedBox(height: 14),
-                      myImage(),
-                      SizedBox(height: 14),
-                      catePro.modeCat != "null"
-                          ? ElevatedButton(
-                              style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
-                              child: Text("เพิ่ม ${catePro.modeCat == 'exp' ? 'รายจ่าย' : 'รายรับ'}", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                              onPressed: () => myAdd(catePro),
-                            )
-                          : Text(""),
+                      myHeader(catePro),
+                      Expanded(
+                        child: ListView(
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          children: [
+                            myDateTime(),
+                            SizedBox(height: 14),
+                            myCategory(catePro),
+                            SizedBox(height: 14),
+                            myMoney(),
+                            SizedBox(height: 14),
+                            myDetail(),
+                            SizedBox(height: 14),
+                            myImage(),
+                            SizedBox(height: 14),
+                            catePro.modeCat != "null"
+                                ? ElevatedButton(
+                                    style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
+                                    child: Text("เพิ่ม ${catePro.modeCat == 'exp' ? 'รายจ่าย' : 'รายรับ'}", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                    onPressed: () => myAdd(catePro),
+                                  )
+                                : Text(""),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ],
-            ),
           ),
         ),
       ),
@@ -358,6 +369,7 @@ class _AddScreenState extends State<AddScreen> {
                     Container(
                       color: Colors.white,
                       child: TextField(
+                        controller: detailCon,
                         cursorColor: Colors.black,
                         style: TextStyle(color: Colors.grey),
                         maxLines: 3,
@@ -419,6 +431,7 @@ class _AddScreenState extends State<AddScreen> {
                     Container(
                       color: Colors.white,
                       child: TextField(
+                        controller: moneyCon,
                         cursorColor: Colors.black,
                         style: TextStyle(color: Colors.grey),
                         keyboardType: TextInputType.number,
@@ -649,7 +662,6 @@ class _AddScreenState extends State<AddScreen> {
               ),
               currentTime: daySelect,
               locale: LocaleType.th,
-              // 2022-05-19 20:20:00.000
               onConfirm: (date) => setState(() => daySelect = date),
             );
           },
@@ -693,7 +705,7 @@ class _AddScreenState extends State<AddScreen> {
             },
           ),
           Text(
-            "เพิ่มรายการ",
+            "แก้ไขรายการ",
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
