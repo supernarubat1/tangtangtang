@@ -2,7 +2,9 @@
 // '${daySelect.year.toString().split(' ')[0]}-${daySelect.month.toString().split(' ')[0]}-${daySelect.day.toString().split(' ')[0]}',
 
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
@@ -45,6 +47,7 @@ class _EditScreenState extends State<EditScreen> {
   String img64string = "";
   File? image;
   String imageSize = "";
+  dynamic decodeImage;
   List expList = [
     {"id": 1, "title": "อาหาร"},
     {"id": 2, "title": "เดินทาง"},
@@ -77,11 +80,8 @@ class _EditScreenState extends State<EditScreen> {
     moneyCon.text = myData.money.toString();
     detailCon.text = myData.detail.toString();
 
-    dynamic decodeImage;
     if (myData.image.toString() != "") {
       decodeImage = base64Decode(myData.image.toString());
-    } else {
-      decodeImage = 'assets/images/no-image.jpg';
     }
 
     setState(() {
@@ -134,7 +134,7 @@ class _EditScreenState extends State<EditScreen> {
     }
   }
 
-  myAdd(CategoryProvider catePro) async {
+  myEdit(CategoryProvider catePro) async {
     date = DateFormat('yyyy-MM-dd').format(daySelect);
     time = DateFormat('HH:mm').format(daySelect);
 
@@ -150,12 +150,20 @@ class _EditScreenState extends State<EditScreen> {
       catName = incList[catePro.selectCat - 1]['title'];
     }
 
-    if (image != null) {
+    if (decodeImage != null) {
+      img64string = myData.image.toString();
+    } else if (image != null) {
       final bytes = await image!.readAsBytes();
       img64string = base64Encode(bytes);
+    } else {
+      img64string = "";
     }
 
+    if (money == "0") money = myData.money.toString();
+    if (detail == "") detail = myData.detail.toString();
+
     AddModel data = AddModel(
+      id: myData.id,
       date: date,
       time: time,
       catMode: catMode,
@@ -166,9 +174,9 @@ class _EditScreenState extends State<EditScreen> {
       image: img64string,
     );
 
-    final newAdd = await TangDb.instance.create(data);
+    final newEdit = await TangDb.instance.edit(data);
 
-    print(newAdd);
+    print(newEdit);
   }
 
   back(CategoryProvider catePro) async {
@@ -212,8 +220,8 @@ class _EditScreenState extends State<EditScreen> {
                             catePro.modeCat != "null"
                                 ? ElevatedButton(
                                     style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
-                                    child: Text("เพิ่ม ${catePro.modeCat == 'exp' ? 'รายจ่าย' : 'รายรับ'}", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                    onPressed: () => myAdd(catePro),
+                                    child: Text("แก้ไข ${catePro.modeCat == 'exp' ? 'รายจ่าย' : 'รายรับ'}", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                    onPressed: () => myEdit(catePro),
                                   )
                                 : Text(""),
                           ],
@@ -282,7 +290,7 @@ class _EditScreenState extends State<EditScreen> {
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: image == null
+                child: image == null && decodeImage == null
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -299,30 +307,56 @@ class _EditScreenState extends State<EditScreen> {
                           ),
                         ],
                       )
-                    : Container(
-                        width: double.infinity,
-                        height: 300,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6),
-                          image: DecorationImage(
-                            image: FileImage(image!),
-                            fit: BoxFit.cover,
+                    : image != null
+                        ? Container(
+                            width: double.infinity,
+                            height: 300,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              image: DecorationImage(
+                                image: FileImage(image!),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            child: Align(
+                              alignment: Alignment.topRight,
+                              child: FloatingActionButton(
+                                elevation: 0,
+                                mini: true,
+                                backgroundColor: Color.fromARGB(100, 0, 0, 0),
+                                child: Icon(Icons.close, color: Colors.white, size: 20),
+                                onPressed: () => setState(() {
+                                  image = null;
+                                  imageSize = "";
+                                }),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            width: double.infinity,
+                            height: 300,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              image: DecorationImage(
+                                image: MemoryImage(decodeImage),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            child: Align(
+                              alignment: Alignment.topRight,
+                              child: FloatingActionButton(
+                                elevation: 0,
+                                mini: true,
+                                backgroundColor: Color.fromARGB(100, 0, 0, 0),
+                                child: Icon(Icons.close, color: Colors.white, size: 20),
+                                onPressed: () => setState(() {
+                                  image = null;
+                                  imageSize = "";
+                                  decodeImage = null;
+                                }),
+                              ),
+                            ),
                           ),
-                        ),
-                        child: Align(
-                          alignment: Alignment.topRight,
-                          child: FloatingActionButton(
-                            elevation: 0,
-                            mini: true,
-                            backgroundColor: Color.fromARGB(100, 0, 0, 0),
-                            child: Icon(Icons.close, color: Colors.white, size: 20),
-                            onPressed: () => setState(() {
-                              image = null;
-                              imageSize = "";
-                            }),
-                          ),
-                        ),
-                      ),
               ),
             ],
           ),

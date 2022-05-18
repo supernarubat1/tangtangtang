@@ -58,6 +58,17 @@ class TangDb {
     return res;
   }
 
+  Future<int> edit(AddModel newEdit) async {
+    final db = await instance.database;
+    final res = await db.update(
+      tbAdd,
+      newEdit.toJson(),
+      where: 'id = ?',
+      whereArgs: [newEdit.id],
+    );
+    return res;
+  }
+
   Future getAll() async {
     final db = await instance.database;
     final data = await db.query(tbAdd);
