@@ -2,22 +2,19 @@
 // '${daySelect.year.toString().split(' ')[0]}-${daySelect.month.toString().split(' ')[0]}-${daySelect.day.toString().split(' ')[0]}',
 
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pattern_formatter/pattern_formatter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:tab_indicator_styler/tab_indicator_styler.dart';
 import 'package:tangtangtang/db/tangDb.dart';
 import 'package:tangtangtang/models/addModel.dart';
 import 'package:tangtangtang/providers/categoryProvider.dart';
+import 'package:tangtangtang/screens/homeScreen.dart';
 import 'package:tangtangtang/screens/tabs/expenseTab.dart';
 import 'package:tangtangtang/screens/tabs/incomeTab.dart';
 
@@ -176,7 +173,36 @@ class _EditScreenState extends State<EditScreen> {
 
     final newEdit = await TangDb.instance.edit(data);
 
-    print(newEdit);
+    if (newEdit > 0) {
+      Navigator.pushNamedAndRemoveUntil(context, HomeScreen.id, (route) => false);
+    }
+  }
+
+  delete() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text("ลบรายการ"),
+        content: Text("ต้องการลบรายการนี้ ใช่หรือไม่?"),
+        actions: [
+          TextButton(
+            child: Text("ยกเลิก"),
+            onPressed: () => Navigator.pop(context),
+          ),
+          TextButton(
+            child: Text(
+              "ตกลง",
+              style: TextStyle(color: Colors.black),
+            ),
+            onPressed: () async {
+              final del = await TangDb.instance.delete(myData.id!);
+              if (del > 0) Navigator.pushNamedAndRemoveUntil(context, HomeScreen.id, (route) => false);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   back(CategoryProvider catePro) async {
@@ -224,6 +250,10 @@ class _EditScreenState extends State<EditScreen> {
                                     onPressed: () => myEdit(catePro),
                                   )
                                 : Text(""),
+                            TextButton(
+                              child: Text("ลบรายการ"),
+                              onPressed: () => delete(),
+                            ),
                           ],
                         ),
                       ),

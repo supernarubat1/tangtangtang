@@ -16,6 +16,7 @@ import 'package:tab_indicator_styler/tab_indicator_styler.dart';
 import 'package:tangtangtang/db/tangDb.dart';
 import 'package:tangtangtang/models/addModel.dart';
 import 'package:tangtangtang/providers/categoryProvider.dart';
+import 'package:tangtangtang/screens/homeScreen.dart';
 import 'package:tangtangtang/screens/tabs/expenseTab.dart';
 import 'package:tangtangtang/screens/tabs/incomeTab.dart';
 
@@ -135,32 +136,9 @@ class _AddScreenState extends State<AddScreen> {
 
     final newAdd = await TangDb.instance.create(data);
 
-    print(newAdd);
-
-    // print(DateFormat('yyyy-MM-dd').format(daySelect));
-    // print(DateFormat('HH:mm').format(daySelect));
-
-    // print("exp");
-    // print("catId : ${expList[catePro.selectCat - 1]['id']}");
-    // print("catName : ${expList[catePro.selectCat - 1]['title']}");
-    // print("inc");
-    // print("catId : ${incList[catePro.selectCat - 1]['id']}");
-    // print("catName : ${incList[catePro.selectCat - 1]['title']}");
-
-    // print(money);
-    // print(detail);
-    // print(img64string.substring(0, 100));
-
-    // AddModel.fromJson({
-    //   "date": date,
-    //   "time": time,
-    //   "catMode": catMode,
-    //   "catId": catId,
-    //   "catName": catName,
-    //   "money": money,
-    //   "detail": detail,
-    //   "image": img64string,
-    // });
+    if (newAdd > 0) {
+      Navigator.pushNamedAndRemoveUntil(context, HomeScreen.id, (route) => false);
+    }
   }
 
   back(CategoryProvider catePro) async {

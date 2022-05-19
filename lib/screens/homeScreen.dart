@@ -81,7 +81,11 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: 10),
               myDate(),
               SizedBox(height: 20),
-              isLoading ? CircularProgressIndicator() : myData(),
+              isLoading
+                  ? CircularProgressIndicator()
+                  : listAdd.isEmpty
+                      ? Text("ไม่มีข้อมูล")
+                      : myData(),
             ],
           ),
         ),
@@ -250,10 +254,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       SizedBox(height: 10),
                       Text(listAdd[i].detail.toString()),
                       SizedBox(height: 10),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Text('${listAdd[i].time.toString()} น'),
-                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            DateFormat("dd-MM-yyyy").format(DateTime.parse(listAdd[i].date.toString())),
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            listAdd[i].time.toString(),
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      )
                     ],
                   ),
                 ),

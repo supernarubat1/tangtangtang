@@ -69,6 +69,16 @@ class TangDb {
     return res;
   }
 
+  Future<int> delete(int id) async {
+    final db = await instance.database;
+    final res = await db.delete(
+      tbAdd,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    return res;
+  }
+
   Future getAll() async {
     final db = await instance.database;
     final data = await db.query(tbAdd);
